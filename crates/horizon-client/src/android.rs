@@ -5,7 +5,8 @@
 //! (`horizon-android`) hands the app over here before the game starts, and
 //! `game::runtime::event_loop::new_loop` builds the loop from it.
 use std::cell::RefCell;
-use winit::event_loop::{EventLoop, EventLoopError};
+use winit::error::EventLoopError;
+use winit::event_loop::EventLoop;
 use winit::platform::android::EventLoopBuilderExtAndroid;
 use winit::platform::android::activity::AndroidApp;
 

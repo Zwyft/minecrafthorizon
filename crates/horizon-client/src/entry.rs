@@ -24,6 +24,7 @@ impl Startup {
 /// and resource marker metadata only: no logging, account loading, mods or worker threads.
 /// Account IO, cwd changes and command registration remain in Options::read, after leases.
 pub fn prepare() -> Startup {
+    #[cfg(any(target_os = "linux", target_os = "macos", windows))]
     horizon_mod_package::holder::enter();
     let result: crate::Result<_> = (|| {
         let mut command = std::process::Command::new(std::env::current_exe()?);
@@ -38,6 +39,7 @@ pub fn prepare() -> Startup {
 /// Startup from an explicit command line, for a platform whose process has none: Android hands
 /// the activity's folders here instead of arguments (`horizon-android`).
 pub fn prepare_with(arguments: Vec<String>) -> Startup {
+    #[cfg(any(target_os = "linux", target_os = "macos", windows))]
     horizon_mod_package::holder::enter();
     let result: crate::Result<_> = (|| {
         let cwd = std::env::current_dir()?;
@@ -61,7 +63,12 @@ fn startup_from(result: crate::Result<(LaunchArguments, Option<game::Options>)>)
     let Some(options) = options else {
         std::process::exit(0);
     };
+    // The launch holder leases the game's folders across processes; a platform without it
+    // (Android's activity owns them) starts without one.
+    #[cfg(any(target_os = "linux", target_os = "macos", windows))]
     let capture = horizon_mod_package::holder::acquire(&launch);
+    #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
+    let capture = None;
     Startup {
         launch,
         options,

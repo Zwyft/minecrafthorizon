@@ -468,14 +468,13 @@ impl ApplicationHandler for Game<'_> {
         };
         self.handle_window_event(event_loop, id, event, input_trace::InputOrigin::User);
         if let Some((event, modifiers)) = key {
-            use winit::platform::modifier_supplement::KeyEventExtModifierSupplement;
             let name = match event.physical_key {
                 PhysicalKey::Code(code) => horizon_client::keybinds::key_name(code),
                 PhysicalKey::Unidentified(_) => None,
             };
             let layout_key = horizon_client::keybinds::layout_key_name(
                 event.physical_key,
-                &event.key_without_modifiers(),
+                &unmodified_key(&event),
             );
             let raw_code = horizon_client::keybinds::raw_key_code(event.physical_key);
             let action = match (event.state, event.repeat) {
@@ -862,4 +861,32 @@ mod tests {
             assert!(!locks_out(InputOrigin::User, true, &event));
         }
     }
+}
+
+/// The key's name on the user's layout without the modifiers held: winit reports that
+/// separately on the desktop platforms (`modifier_supplement`); Android's key event already
+/// carries the character the layout produced with the modifiers that were held.
+#[cfg(any(
+    windows,
+    target_os = "macos",
+    all(
+        unix,
+        not(any(target_os = "android", target_os = "ios", target_os = "emscripten"))
+    )
+))]
+fn unmodified_key(event: &winit::event::KeyEvent) -> winit::keyboard::Key {
+    use winit::platform::modifier_supplement::KeyEventExtModifierSupplement;
+    event.key_without_modifiers()
+}
+
+#[cfg(not(any(
+    windows,
+    target_os = "macos",
+    all(
+        unix,
+        not(any(target_os = "android", target_os = "ios", target_os = "emscripten"))
+    )
+)))]
+fn unmodified_key(event: &winit::event::KeyEvent) -> winit::keyboard::Key {
+    event.logical_key.clone()
 }
