@@ -19,7 +19,7 @@ horizon-client = { path = "../horizon-client", default-features = false, feature
 ] }
 horizon-core = { path = "../horizon-core" }
 horizon-guest-stack = { path = "../horizon-guest-stack" }
-horizon-mod-host = { path = "../horizon-mod-host" }
+horizon-mod-host = { path = "../horizon-mod-host", default-features = false }
 horizon-mod-package = { path = "../horizon-mod-package", default-features = false, features = [
     "index",
     "runtime-process",
