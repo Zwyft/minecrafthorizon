@@ -59,7 +59,7 @@ jobs:
             echo "RANLIB_aarch64-linux-android=$bin/llvm-ranlib"
           } >> "$GITHUB_ENV"
       - name: Check the Android activity
-        # `--message-format=short` also writes the errors as one annotation: the job log needs a
+        # `--message-format=short`, and the errors also as annotations: the job log needs a
         # signed-in reader with rights on this repository, an annotation is readable from the
         # public checks API.
         run: |
@@ -69,8 +69,12 @@ jobs:
           status=$?
           if [ "$status" -ne 0 ]; then
             tail -n 40 /tmp/check.log
-            msg=$(grep -E 'error(\[|:)' /tmp/check.log | head -n 20 \
-              | awk 'NR > 1 { printf "%%0A" } { gsub(/%/, "%25"); printf "%s", $0 } END { printf "\n" }')
-            echo "::error title=cargo check -p horizon-android::${msg}"
+            {
+              grep -E 'error(\[|:)' /tmp/check.log | head -n 5
+              grep -v '^[[:space:]]*$' /tmp/check.log | tail -n 3
+            } | cut -c1-900 | head -n 8 \
+              | while IFS= read -r line; do
+                  echo "::error::${line//%/%25}"
+                done
           fi
           exit "$status"
