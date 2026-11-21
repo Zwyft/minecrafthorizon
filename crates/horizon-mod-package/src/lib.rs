@@ -34,7 +34,10 @@ pub mod modpack;
 pub mod output;
 pub mod packages;
 pub mod runtime;
-#[cfg(feature = "runtime-process")]
+#[cfg(all(
+    feature = "runtime-process",
+    any(target_os = "linux", target_os = "macos", windows)
+))]
 pub mod runtime_leases;
 pub mod sdk;
 pub mod selection;

@@ -20,10 +20,7 @@ horizon-client = { path = "../horizon-client", default-features = false, feature
 horizon-core = { path = "../horizon-core" }
 horizon-guest-stack = { path = "../horizon-guest-stack" }
 horizon-mod-host = { path = "../horizon-mod-host", default-features = false }
-horizon-mod-package = { path = "../horizon-mod-package", default-features = false, features = [
-    "index",
-    "runtime-process",
-] }
+horizon-mod-package = { path = "../horizon-mod-package", default-features = false }
 horizon-official = { path = "../horizon-official", default-features = false }
 log = "0.4"
 winit = "0.30.13"
