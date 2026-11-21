@@ -69,10 +69,8 @@ jobs:
           status=$?
           if [ "$status" -ne 0 ]; then
             tail -n 40 /tmp/check.log
-            {
-              grep -E 'error(\[|:)' /tmp/check.log | head -n 5
-              grep -v '^[[:space:]]*$' /tmp/check.log | tail -n 3
-            } | cut -c1-900 | head -n 8 \
+            # The last lines name the crate whose build failed and why.
+            grep -v '^[[:space:]]*$' /tmp/check.log | tail -n 9 | cut -c1-900 \
               | while IFS= read -r line; do
                   echo "::error::${line//%/%25}"
                 done
