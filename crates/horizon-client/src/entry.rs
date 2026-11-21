@@ -32,6 +32,28 @@ pub fn prepare() -> Startup {
         let options = game::Options::validate(launch.clone())?;
         Ok((launch, options))
     })();
+    startup_from(result)
+}
+
+/// Startup from an explicit command line, for a platform whose process has none: Android hands
+/// the activity's folders here instead of arguments (`horizon-android`).
+pub fn prepare_with(arguments: Vec<String>) -> Startup {
+    horizon_mod_package::holder::enter();
+    let result: crate::Result<_> = (|| {
+        let cwd = std::env::current_dir()?;
+        let launch = LaunchArguments::parse(
+            arguments.into_iter(),
+            &cwd,
+            &crate::logging::game_home(),
+            std::env::var_os("HORIZON_HOME").as_deref(),
+        )?;
+        let options = game::Options::validate(launch.clone())?;
+        Ok((launch, options))
+    })();
+    startup_from(result)
+}
+
+fn startup_from(result: crate::Result<(LaunchArguments, Option<game::Options>)>) -> Startup {
     let (launch, options) = result.unwrap_or_else(|error| {
         eprintln!("Horizon: {error}");
         std::process::exit(game::exit_code::USAGE);

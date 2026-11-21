@@ -161,6 +161,12 @@ impl Game<'_> {
         if !ours {
             return;
         }
+        // A phone's fingers: the touch controls in play, a click on a menu.
+        #[cfg(target_os = "android")]
+        if let WindowEvent::Touch(touch) = &event {
+            self.touch_event(event_loop, id, *touch);
+            return;
+        }
         if let Some(modifiers) = held_modifiers(origin, self.unclaimed_window, &event) {
             self.unclaimed_modifiers = Some(modifiers);
         }

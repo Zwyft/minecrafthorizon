@@ -1,0 +1,62 @@
+name: android
+
+# Type-checks the Android activity on every push that touches it. The desktop workspace never
+# compiles `cfg(target_os = "android")` code, so this is the only check that sees the activity's
+# entry, the touch wiring in the game and the packaging. It builds no APK and needs no resource
+# files: `tools/android_build.py` makes the installable APK on a machine with a device attached
+# (docs/android.md).
+on:
+  push:
+    paths:
+      - ".github/workflows/android.yml"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "crates/horizon-android/**"
+      - "crates/horizon-client/Cargo.toml"
+      - "crates/horizon-client/src/android.rs"
+      - "crates/horizon-client/src/client_lib.rs"
+      - "crates/horizon-client/src/entry.rs"
+      - "crates/horizon-client/src/game/interface/android_touch.rs"
+      - "crates/horizon-client/src/game/interface/pad/**"
+      - "crates/horizon-client/src/game/runtime/**"
+      - "crates/horizon-official/Cargo.toml"
+      - "packaging/android/**"
+      - "tools/android_build.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  check:
+    # One ABI: the phones Horizon targets. The check runs no game, so the ABI only decides the
+    # target std and the C compiler the native dependencies build with.
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable, 2026-11
+        with:
+          toolchain: stable
+          targets: aarch64-linux-android
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          key: android-aarch64
+      - name: Point Cargo and cc at the NDK
+        # The runner image ships the SDK and an NDK; minSdk 28 is the API the manifest asks for.
+        run: |
+          ndk="${ANDROID_NDK_LATEST_HOME:-$ANDROID_NDK_HOME}"
+          bin="$ndk/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          test -x "$bin/aarch64-linux-android28-clang"
+          {
+            echo "CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=$bin/aarch64-linux-android28-clang"
+            echo "CC_aarch64-linux-android=$bin/aarch64-linux-android28-clang"
+            echo "CXX_aarch64-linux-android=$bin/aarch64-linux-android28-clang++"
+            echo "AR_aarch64-linux-android=$bin/llvm-ar"
+            echo "RANLIB_aarch64-linux-android=$bin/llvm-ranlib"
+          } >> "$GITHUB_ENV"
+      - name: Check the Android activity
+        run: cargo check --locked -p horizon-android --target aarch64-linux-android

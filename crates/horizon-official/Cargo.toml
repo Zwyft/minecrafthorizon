@@ -15,7 +15,7 @@ test = false
 
 [dependencies]
 horizon-addresses = { path = "../horizon-addresses" }
-horizon-game = { path = "../horizon-game" }
+horizon-game = { path = "../horizon-game", default-features = false }
 horizon-platform = { path = "../horizon-platform" }
 horizon-heartbeat = { path = "../horizon-heartbeat" }
 horizon-friends = { path = "../horizon-friends", features = ["game"] }
@@ -23,6 +23,14 @@ horizon-official-servers = { path = "../horizon-official-servers" }
 horizon-discord = { path = "../horizon-discord" }
 horizon-perf-share = { path = "../horizon-perf-share" }
 log = "0.4"
+
+[features]
+# What the shipped executables have. A platform that cannot carry one (Android has no gilrs
+# backend, and its audio is off for now) takes `default-features = false` and names the rest.
+default = ["audio", "controllers", "horizon-extras"]
+audio = ["horizon-game/audio"]
+controllers = ["horizon-game/controllers"]
+horizon-extras = ["horizon-game/horizon-extras"]
 
 [build-dependencies]
 # The build script runs on the host, but embeds resources based on the target OS.

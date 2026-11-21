@@ -42,7 +42,7 @@ pub(super) fn show(looked_in: &std::path::Path, settings: &Settings) -> Result<(
         error: None,
     };
 
-    EventLoop::new()?.run_app(&mut app)?;
+    super::event_loop::new_loop()?.run_app(&mut app)?;
     app.error.map_or(Ok(()), Err)
 }
 

@@ -427,6 +427,12 @@ Starling's `crates/horizon-client-render/src/touch.rs` at the same commit.
 `crates/horizon-client-render/src/android_runtime.rs` and `android_runtime/tests/` are adapted from the
 input part of Starling's `crates/horizon-client-render/src/android_runtime.rs` at the same commit.
 
+`crates/horizon-android/`, `crates/horizon-client/src/android.rs`,
+`crates/horizon-client/src/game/interface/android_touch.rs`, `packaging/android/` and
+`tools/android_build.py` are adapted from Starling's `android_main.rs`, its game launch
+(`android/game_launch.rs`), its `packaging/android` project and its `tools/android_build.py` at
+the same commit.
+
 ## PCG3D hash
 
 `hash3` in `crates/horizon-client-render/src/hdr.wgsl`, the noise HDR10 output's dither is made from, is the

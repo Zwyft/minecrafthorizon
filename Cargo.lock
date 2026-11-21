@@ -1761,6 +1761,20 @@ name = "horizon-addresses"
 version = "0.1.0"
 
 [[package]]
+name = "horizon-android"
+version = "0.1.0"
+dependencies = [
+ "horizon-client",
+ "horizon-core",
+ "horizon-guest-stack",
+ "horizon-mod-host",
+ "horizon-mod-package",
+ "horizon-official",
+ "log",
+ "winit",
+]
+
+[[package]]
 name = "horizon-anticheat"
 version = "0.1.0"
 dependencies = [

@@ -377,6 +377,10 @@ impl Game<'_> {
     /// Once per loop iteration: read the pads and act on button changes.
     pub(super) fn poll_pads(&mut self, event_loop: &dyn EventLoopCtl) {
         self.pad.virtual_input = self.pad.injected != PadState::default();
+        // A phone's shortcut buttons press their keys before the pad context is read: one may
+        // open a screen, which the context below then sees.
+        #[cfg(target_os = "android")]
+        self.touch_requests();
         let context = self.pad_context();
         if let Some(old) = self.pad.context.filter(|old| *old != context) {
             if old.screen != context.screen {
@@ -385,7 +389,13 @@ impl Game<'_> {
             self.pad_cancel_inputs(event_loop);
         }
         self.pad.context = Some(context);
-        if !self.settings.controller.enabled {
+        // A phone's screen is a controller: the touch controls work whatever the controller
+        // switch says, since there may be no other way to play.
+        #[cfg(target_os = "android")]
+        let controllers_enabled = true;
+        #[cfg(not(target_os = "android"))]
+        let controllers_enabled = self.settings.controller.enabled;
+        if !controllers_enabled {
             self.pad_output_off();
             self.pad_cancel_inputs(event_loop);
             // The radial menu closed with the pad: its overlay fades out, as for a cancel.
@@ -407,6 +417,9 @@ impl Game<'_> {
             Some(state) => state,
             None => self.pad.read(),
         };
+        // On a phone the screen's fingers are a controller too.
+        #[cfg(target_os = "android")]
+        let hardware = hardware.merge(&super::android_touch::pad_state());
         // A Nintendo pad going by its letters is read that way: its own, or the one
         // splitscreen's router feeds this player.
         let hardware = if self.pad.by_letter(&self.settings.controller) {

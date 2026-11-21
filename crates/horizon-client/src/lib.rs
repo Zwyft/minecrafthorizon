@@ -5,6 +5,9 @@
 extern crate self as horizon_client;
 pub use horizon_client_lib::carrier_store;
 pub use horizon_client_lib::*;
+/// The activity's winit app, for the game's event loop (Android's native entry installs it).
+#[cfg(target_os = "android")]
+pub mod android;
 #[doc(hidden)]
 pub mod entry;
 
